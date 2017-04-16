@@ -1,0 +1,28 @@
+bart-mode provides long awaited for access to real time BART departure information from within Emacs:
+
+[[./screenshot.png]]
+* Installation and setup
+In your config file:
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'load-path "path/to/bart-mode")
+  (require 'bart-mode)
+#+END_SRC
+The default station can be set with ~bart-rtd-station~ which must be set to a recognized station abbreviation.
+For example, to set your default station to civic center:
+#+BEGIN_SRC emacs-lisp
+  (setq bart-rtd-station "civc")
+#+END_SRC
+
+* Usage
+To view real time bart departures:
+: M-x bart
+use =s= to select another station or =q= to quit.
+
+* API key
+Bart-mode comes with the public API key. If BART revokes this key due to abuse you may have to register for your 
+own at http://api.bart.gov/api/register.aspx
+
+* todo
+- Display advisory Information http://api.bart.gov/docs/bsa/
+- Handle error responses
+- Sort destinations by station platform? - not useful
