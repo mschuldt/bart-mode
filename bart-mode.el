@@ -107,7 +107,7 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
                   (bart-str "a" "white" "blue" 'ultra-bold 200)
                   (bart-str "rt" "#6ca6cd" "black" 'ultra-bold 200)
                   (bart-str " Real Time Departures" "#6ca6cd" "black" 'bold 150)
-                  (bart-str "\n\n" "#6ca6cd"))))
+                  (bart-str "\n\n" "#6ca6cd" nil nil 50))))
 
 (defun bart-caddar (x) (nth 2 (car x)));; eliminate dependency on 'cl
 
@@ -139,7 +139,10 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
               color (bart-caddar (dom-by-tag etd 'hexcolor)))
 
         (insert (format "%-25s" (concat (bart-str (char-to-string ?\x25A0) nil color)
-                                        (bart-str (format " %s min " min) nil nil 'ultra-bold)
+                                        (bart-str (if (string= min "Leaving")
+                                                      (concat " " min " ")
+                                                    (format " %s min " min))
+                                                  nil nil 'ultra-bold)
                                         (format "(%s car)" len)))))
       (insert "\n")))
   (insert (bart-str "\n" "#6ca6cd"))
