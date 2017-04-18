@@ -213,16 +213,18 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
         (define-key map (kbd "a") 'bart-toggle-station-abbreviation)
         map))
 
-(define-derived-mode bart-mode fundamental-mode "Bart"
+(define-derived-mode _bart-mode fundamental-mode "Bart"
   "Mode for displaying real-time bart departures"
-  (use-local-map bart-mode-map)
-  (add-hook 'kill-buffer-hook 'bart-rtd-buffer-killed-hook-fn)
-  (setq truncate-lines t)
-  (read-only-mode 1)
-  (setq bart-rtd-buffer (current-buffer))
-  (setq bart-rtd-update-timer
-        (run-at-time t bart-rtd-update-interval 'bart-rtd-update))
-  (bart-rtd-update))
+  (if (called-interactively-p)
+      (message "Use M-x bart")
+    (use-local-map bart-mode-map)
+    (add-hook 'kill-buffer-hook 'bart-rtd-buffer-killed-hook-fn)
+    (setq truncate-lines t)
+    (read-only-mode 1)
+    (setq bart-rtd-buffer (current-buffer))
+    (setq bart-rtd-update-timer
+          (run-at-time t bart-rtd-update-interval 'bart-rtd-update))
+    (bart-rtd-update)))
 
 (setq bart-rtd-initial-window-height 10)
 
@@ -240,6 +242,6 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
                             nil))
       (set-window-buffer w bart-rtd-buffer)
       (select-window w))
-    (bart-mode)))
+    (_bart-mode)))
 
 (provide 'bart-mode)
