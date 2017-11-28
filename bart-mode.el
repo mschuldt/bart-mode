@@ -37,9 +37,8 @@ for reasons why you might want to register for your own")
   "Default bart station abbreviation.
 Must be a recognized station abbreviation. `bart-stations' provides the mapping")
 
-(defvar bart--rtd-buffer nil)
-(defvar bart--rtd-update-timer nil)
 (defvar bart-abbreviate-station-names nil)
+
 (defvar bart-rtd-update-interval 60)
 
 (defvar bart-stations '(("12th St. Oakland City Center" . "12th")
@@ -90,6 +89,56 @@ Must be a recognized station abbreviation. `bart-stations' provides the mapping"
                         ("West Oakland" . "woak"))
   "alist of station - abbreviation pairs.
 source: http://api.bart.gov/docs/overview/abbrev.aspx")
+
+(defvar bart--rtd-buffer nil)
+(defvar bart--rtd-update-timer nil)
+(defvar bart--rtd-initial-window-height 10)
+
+(defun bart-select-station ()
+  (interactive)
+  (let ((station (ido-completing-read "station: " (mapcar 'car bart-stations))))
+    (when station
+      (setq bart-rtd-station (cdr (assoc station bart-stations)))
+      (when bart--rtd-buffer
+        (bart-rtd-update)))))
+
+(defun bart-quit ()
+  (interactive)
+  (bart--cleanup))
+
+(defun bart-rtd-update ()
+  (interactive)
+  (bart--rtd-request))
+
+(defun bart-toggle-station-abbreviation ()
+  (interactive)
+  (setq bart-abbreviate-station-names (not bart-abbreviate-station-names))
+  (when bart--rtd-buffer
+    (bart-rtd-update)))
+
+(setq bart-mode-map
+      (let ((map (make-sparse-keymap 'bart-mode-map)))
+        (define-key map (kbd "s") 'bart-select-station)
+        (define-key map (kbd "q") 'bart-quit)
+        (define-key map (kbd "g") 'bart-rtd-update)
+        (define-key map (kbd "a") 'bart-toggle-station-abbreviation)
+        map))
+
+(defun bart ()
+  "Display real time bart departure information"
+  (interactive)
+  (if (buffer-live-p bart--rtd-buffer)
+      (switch-to-buffer bart--rtd-buffer)
+    (bart--cleanup)
+    (setq bart--rtd-buffer (get-buffer-create "*BART Departures*"))
+    (let ((w (get-largest-window)))
+      (setq w (split-window w
+                            (- (window-height w)
+                               bart--rtd-initial-window-height 2)
+                            nil))
+      (set-window-buffer w bart--rtd-buffer)
+      (select-window w))
+    (bart--mode)))
 
 (defun bart--str (str &optional background foreground weight height)
   (let (props)
@@ -172,18 +221,6 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
                                  (cons "cmd" "etd"))
                 #'bart--rtd-request-callback))
 
-(defun bart-select-station ()
-  (interactive)
-  (let ((station (ido-completing-read "station: " (mapcar 'car bart-stations))))
-    (when station
-      (setq bart-rtd-station (cdr (assoc station bart-stations)))
-      (when bart--rtd-buffer
-        (bart-rtd-update)))))
-
-(defun bart-quit ()
-  (interactive)
-  (bart--cleanup))
-
 (defun bart--cleanup ()
   (when bart--rtd-update-timer
     (cancel-timer bart--rtd-update-timer)
@@ -198,24 +235,6 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
     (setq bart--rtd-buffer nil)
     (bart--cleanup)))
 
-(defun bart-rtd-update ()
-  (interactive)
-  (bart--rtd-request))
-
-(defun bart-toggle-station-abbreviation ()
-  (interactive)
-  (setq bart-abbreviate-station-names (not bart-abbreviate-station-names))
-  (when bart--rtd-buffer
-    (bart-rtd-update)))
-
-(setq bart-mode-map
-      (let ((map (make-sparse-keymap 'bart-mode-map)))
-        (define-key map (kbd "s") 'bart-select-station)
-        (define-key map (kbd "q") 'bart-quit)
-        (define-key map (kbd "g") 'bart-rtd-update)
-        (define-key map (kbd "a") 'bart-toggle-station-abbreviation)
-        map))
-
 (define-derived-mode bart--mode fundamental-mode "Bart"
   "Mode for displaying real-time bart departures"
   (if (called-interactively-p)
@@ -228,21 +247,5 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
     (setq bart--rtd-update-timer
           (run-at-time t bart-rtd-update-interval 'bart-rtd-update))
     (bart-rtd-update)))
-
-(defun bart ()
-  "Display real time bart departure information"
-  (interactive)
-  (if (buffer-live-p bart--rtd-buffer)
-      (switch-to-buffer bart--rtd-buffer)
-    (bart--cleanup)
-    (setq bart--rtd-buffer (get-buffer-create "*BART Departures*"))
-    (let ((w (get-largest-window)))
-      (setq w (split-window w
-                            (- (window-height w)
-                               bart--rtd-initial-window-height 2)
-                            nil))
-      (set-window-buffer w bart--rtd-buffer)
-      (select-window w))
-    (bart--mode)))
 
 (provide 'bart-mode)
