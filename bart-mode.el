@@ -1,25 +1,29 @@
-;;; bart-mode.el --- Real time bart departures info.  -*- lexical-binding: t -*-
+;;; bart-mode.el --- Real time BART departures info.  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2017 Michael Schuldt (mbschuldt@gmail.com)
+;; Copyright (C) 2017 Michael Schuldt
 
-;; This file is not part of GNU Emacs.
+;; Author: Michael Schuldt <mbschuldt@gmail.com>
+;; Version: 1.4.2
 
-;; GNU Emacs is free software: you can redistribute it and/or modify
-;; it under the terms of the GNU General Public License as published by
-;; the Free Software Foundation, either version 3 of the License, or
-;; (at your option) any later version.
+;; Keywords: transit BART
+;; X-URL: https://github.com/mschuldt/bart-mode
 
-;; GNU Emacs is distributed in the hope that it will be useful,
-;; but WITHOUT ANY WARRANTY; without even the implied warranty of
-;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-;; GNU General Public License for more details.
+;; This program is free software; you can redistribute it and/or
+;; modify it under the terms of the GNU General Public License as
+;; published by the Free Software Foundation; either version 2, or (at
+;; your option) any later version.
+
+;; This program is distributed in the hope that it will be useful, but
+;; WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+;; General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
 ;; along with GNU Emacs.  If not, see <http://www.gnu.org/licenses/>.
 
 ;;; Commentary:
 
-;;  Display real time bart departures information from the bart API:
+;;  Display real time bart departures information from the BART API:
 ;;   http://api.bart.gov/docs/overview/index.aspx
 
 ;;; Code:
@@ -189,9 +193,9 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
 
         (insert (format "%-25s" (concat (bart--str (char-to-string ?\x25A0) nil color)
                                         (bart--str (if (string= min "Leaving")
-                                                      (concat " " min " ")
-                                                    (format " %s min " min))
-                                                  nil nil 'ultra-bold)
+                                                       (concat " " min " ")
+                                                     (format " %s min " min))
+                                                   nil nil 'ultra-bold)
                                         (format "(%s car)" len)))))
       (insert "\n")))
   (insert (bart--str "\n" "#6ca6cd"))
@@ -218,8 +222,8 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
 (defun bart--rtd-request (&optional station)
   ;; http://api.bart.gov/docs/etd/etd.aspx
   (bart--request "etd.aspx" (list (cons "orig" (or station bart-station))
-                                 (cons "cmd" "etd"))
-                #'bart--rtd-request-callback))
+                                  (cons "cmd" "etd"))
+                 #'bart--rtd-request-callback))
 
 (defun bart--cleanup ()
   (when bart--rtd-update-timer
