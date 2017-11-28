@@ -150,7 +150,8 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
     (when background (push (list :background background) props))
     (when weight (push (list :weight weight) props))
     ;;TODO: need to set height relatively
-    ;;(when height (push (list :height height) props))
+    (and nil ;; disable like this to avoid bytecomp warnings
+         (when height (push (list :height height) props)))
     (propertize str 'font-lock-face props)))
 
 (defun bart--rtd-insert-header ()
@@ -173,7 +174,7 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
          (time (bart--caddar (dom-by-tag root 'time)))
          (name (bart--caddar (dom-by-tag station 'name)))
          (destinations (dom-by-tag station 'etd))
-         dest abr min len color)
+         dest abr min len color station-name)
     (insert (concat (bart--str (format " %s" name) "tan" "black" 'bold)
                     (bart--str " Departures as of " "tan" "black")
                     (bart--str (format "%s\n" time) "tan" "black" 'ultra-bold)))
@@ -216,7 +217,7 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
                                    (cons (cons "key" bart-api-key) keys)
                                    "&"))
                 (lambda (status)
-                  ;;TODO: check status
+                  status ;;TODO: check status
                   (funcall cb (xml-parse-region)))))
 
 (defun bart--rtd-request (&optional station)
@@ -241,7 +242,7 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
 
 (define-derived-mode bart--mode fundamental-mode "Bart"
   "Mode for displaying real-time bart departures"
-  (if (called-interactively-p)
+  (if (called-interactively-p nil)
       (error "Use M-x bart")
     (use-local-map bart-mode-map)
     (add-hook 'kill-buffer-hook 'bart--rtd-buffer-killed-hook-fn)
