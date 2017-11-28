@@ -37,8 +37,8 @@ for reasons why you might want to register for your own")
   "Default bart station abbreviation.
 Must be a recognized station abbreviation. `bart-stations' provides the mapping")
 
-(defvar bart-rtd-buffer nil)
-(defvar bart-rtd-update-timer nil)
+(defvar bart--rtd-buffer nil)
+(defvar bart--rtd-update-timer nil)
 (defvar bart-abbreviate-station-names nil)
 (defvar bart-rtd-update-interval 60)
 
@@ -91,7 +91,7 @@ Must be a recognized station abbreviation. `bart-stations' provides the mapping"
   "alist of station - abbreviation pairs.
 source: http://api.bart.gov/docs/overview/abbrev.aspx")
 
-(defun bart-str (str &optional background foreground weight height)
+(defun bart--str (str &optional background foreground weight height)
   (let (props)
     (when foreground (push (list :foreground foreground) props))
     (when background (push (list :background background) props))
@@ -100,63 +100,63 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
     ;;(when height (push (list :height height) props))
     (propertize str 'font-lock-face props)))
 
-(defun bart-rtd-insert-header ()
-  (insert (concat (bart-str "\n" "#6ca6cd" nil nil 50)
-                  (bart-str " " "#6ca6cd" nil nil 110)
-                  (bart-str "b" "white" "black" 'ultra-bold 200)
-                  (bart-str "a" "white" "blue" 'ultra-bold 200)
-                  (bart-str "rt" "#6ca6cd" "black" 'ultra-bold 200)
-                  (bart-str " Real Time Departures" "#6ca6cd" "black" 'bold 150)
-                  (bart-str "\n\n" "#6ca6cd" nil nil 50))))
+(defun bart--rtd-insert-header ()
+  (insert (concat (bart--str "\n" "#6ca6cd" nil nil 50)
+                  (bart--str " " "#6ca6cd" nil nil 110)
+                  (bart--str "b" "white" "black" 'ultra-bold 200)
+                  (bart--str "a" "white" "blue" 'ultra-bold 200)
+                  (bart--str "rt" "#6ca6cd" "black" 'ultra-bold 200)
+                  (bart--str " Real Time Departures" "#6ca6cd" "black" 'bold 150)
+                  (bart--str "\n\n" "#6ca6cd" nil nil 50))))
 
-(defun bart-caddar (x) (nth 2 (car x)));; eliminate dependency on 'cl
+(defun bart--caddar (x) (nth 2 (car x)));; eliminate dependency on 'cl
 
-(defun bart-rtd-update-buffer (xml)
+(defun bart--rtd-update-buffer (xml)
   (read-only-mode -1)
   (erase-buffer)
-  (bart-rtd-insert-header)
+  (bart--rtd-insert-header)
   (let* ((root (car (dom-by-tag xml 'root)))
          (station (dom-by-tag root 'station))
-         (time (bart-caddar (dom-by-tag root 'time)))
-         (name (bart-caddar (dom-by-tag station 'name)))
+         (time (bart--caddar (dom-by-tag root 'time)))
+         (name (bart--caddar (dom-by-tag station 'name)))
          (destinations (dom-by-tag station 'etd))
          dest abr min len color)
-    (insert (concat (bart-str (format " %s" name) "tan" "black" 'bold)
-                    (bart-str " Departures as of " "tan" "black")
-                    (bart-str (format "%s\n" time) "tan" "black" 'ultra-bold)))
+    (insert (concat (bart--str (format " %s" name) "tan" "black" 'bold)
+                    (bart--str " Departures as of " "tan" "black")
+                    (bart--str (format "%s\n" time) "tan" "black" 'ultra-bold)))
     (dolist (station destinations)
-      (setq dest (bart-caddar (dom-by-tag station 'destination))
-            abr (bart-caddar (dom-by-tag station 'abbreviation))
+      (setq dest (bart--caddar (dom-by-tag station 'destination))
+            abr (bart--caddar (dom-by-tag station 'abbreviation))
             station-name (if bart-abbreviate-station-names
                              (format "%-8s" abr)
                            (format "%-30s" dest)))
-      (insert (bart-str station-name nil nil 'ultra-bold))
+      (insert (bart--str station-name nil nil 'ultra-bold))
       (dolist (etd (dom-by-tag station 'estimate))
-        (setq min (bart-caddar (dom-by-tag etd 'minutes))
-              ;;plat (bart-caddar (dom-by-tag etd 'platform))
-              ;;dir (bart-caddar (dom-by-tag etd 'direction))
-              len (bart-caddar (dom-by-tag etd 'length))
-              color (bart-caddar (dom-by-tag etd 'hexcolor)))
+        (setq min (bart--caddar (dom-by-tag etd 'minutes))
+              ;;plat (bart--caddar (dom-by-tag etd 'platform))
+              ;;dir (bart--caddar (dom-by-tag etd 'direction))
+              len (bart--caddar (dom-by-tag etd 'length))
+              color (bart--caddar (dom-by-tag etd 'hexcolor)))
 
-        (insert (format "%-25s" (concat (bart-str (char-to-string ?\x25A0) nil color)
-                                        (bart-str (if (string= min "Leaving")
+        (insert (format "%-25s" (concat (bart--str (char-to-string ?\x25A0) nil color)
+                                        (bart--str (if (string= min "Leaving")
                                                       (concat " " min " ")
                                                     (format " %s min " min))
                                                   nil nil 'ultra-bold)
                                         (format "(%s car)" len)))))
       (insert "\n")))
-  (insert (bart-str "\n" "#6ca6cd"))
+  (insert (bart--str "\n" "#6ca6cd"))
   (goto-char 1)
   (read-only-mode 1)
   (fit-window-to-buffer (get-buffer-window (current-buffer))))
 
-(defun bart-rtd-request-callback (xml)
-  (if (buffer-live-p bart-rtd-buffer)
-      (with-current-buffer bart-rtd-buffer
-        (bart-rtd-update-buffer xml))
-    (bart-cleanup)))
+(defun bart--rtd-request-callback (xml)
+  (if (buffer-live-p bart--rtd-buffer)
+      (with-current-buffer bart--rtd-buffer
+        (bart--rtd-update-buffer xml))
+    (bart--cleanup)))
 
-(defun bart-request (type keys cb)
+(defun bart--request (type keys cb)
   (url-retrieve (concat "http://api.bart.gov/api/" type "?"
                         (mapconcat (lambda (x)
                                      (concat (car x) "=" (cdr x)))
@@ -166,46 +166,46 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
                   ;;TODO: check status
                   (funcall cb (xml-parse-region)))))
 
-(defun bart-rtd-request (&optional station)
+(defun bart--rtd-request (&optional station)
   ;; http://api.bart.gov/docs/etd/etd.aspx
-  (bart-request "etd.aspx" (list (cons "orig" (or station bart-rtd-station))
+  (bart--request "etd.aspx" (list (cons "orig" (or station bart-rtd-station))
                                  (cons "cmd" "etd"))
-                #'bart-rtd-request-callback))
+                #'bart--rtd-request-callback))
 
 (defun bart-select-station ()
   (interactive)
   (let ((station (ido-completing-read "station: " (mapcar 'car bart-stations))))
     (when station
       (setq bart-rtd-station (cdr (assoc station bart-stations)))
-      (when bart-rtd-buffer
+      (when bart--rtd-buffer
         (bart-rtd-update)))))
 
 (defun bart-quit ()
   (interactive)
-  (bart-cleanup))
+  (bart--cleanup))
 
-(defun bart-cleanup ()
-  (when bart-rtd-update-timer
-    (cancel-timer bart-rtd-update-timer)
-    (setq bart-rtd-update-timer nil))
-  (when (buffer-live-p bart-rtd-buffer)
-    (delete-windows-on bart-rtd-buffer)
-    (kill-buffer bart-rtd-buffer)
-    (setq bart-rtd-buffer nil)))
+(defun bart--cleanup ()
+  (when bart--rtd-update-timer
+    (cancel-timer bart--rtd-update-timer)
+    (setq bart--rtd-update-timer nil))
+  (when (buffer-live-p bart--rtd-buffer)
+    (delete-windows-on bart--rtd-buffer)
+    (kill-buffer bart--rtd-buffer)
+    (setq bart--rtd-buffer nil)))
 
-(defun bart-rtd-buffer-killed-hook-fn ()
-  (when (eq (current-buffer) bart-rtd-buffer)
-    (setq bart-rtd-buffer nil)
-    (bart-cleanup)))
+(defun bart--rtd-buffer-killed-hook-fn ()
+  (when (eq (current-buffer) bart--rtd-buffer)
+    (setq bart--rtd-buffer nil)
+    (bart--cleanup)))
 
 (defun bart-rtd-update ()
   (interactive)
-  (bart-rtd-request))
+  (bart--rtd-request))
 
 (defun bart-toggle-station-abbreviation ()
   (interactive)
   (setq bart-abbreviate-station-names (not bart-abbreviate-station-names))
-  (when bart-rtd-buffer
+  (when bart--rtd-buffer
     (bart-rtd-update)))
 
 (setq bart-mode-map
@@ -216,35 +216,33 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
         (define-key map (kbd "a") 'bart-toggle-station-abbreviation)
         map))
 
-(define-derived-mode _bart-mode fundamental-mode "Bart"
+(define-derived-mode bart--mode fundamental-mode "Bart"
   "Mode for displaying real-time bart departures"
   (if (called-interactively-p)
-      (message "Use M-x bart")
+      (error "Use M-x bart")
     (use-local-map bart-mode-map)
-    (add-hook 'kill-buffer-hook 'bart-rtd-buffer-killed-hook-fn)
+    (add-hook 'kill-buffer-hook 'bart--rtd-buffer-killed-hook-fn)
     (setq truncate-lines t)
     (read-only-mode 1)
-    (setq bart-rtd-buffer (current-buffer))
-    (setq bart-rtd-update-timer
+    (setq bart--rtd-buffer (current-buffer))
+    (setq bart--rtd-update-timer
           (run-at-time t bart-rtd-update-interval 'bart-rtd-update))
     (bart-rtd-update)))
-
-(setq bart-rtd-initial-window-height 10)
 
 (defun bart ()
   "Display real time bart departure information"
   (interactive)
-  (if (buffer-live-p bart-rtd-buffer)
-      (switch-to-buffer bart-rtd-buffer)
-    (bart-cleanup)
-    (setq bart-rtd-buffer (get-buffer-create "*BART Departures*"))
+  (if (buffer-live-p bart--rtd-buffer)
+      (switch-to-buffer bart--rtd-buffer)
+    (bart--cleanup)
+    (setq bart--rtd-buffer (get-buffer-create "*BART Departures*"))
     (let ((w (get-largest-window)))
       (setq w (split-window w
                             (- (window-height w)
-                               bart-rtd-initial-window-height 2)
+                               bart--rtd-initial-window-height 2)
                             nil))
-      (set-window-buffer w bart-rtd-buffer)
+      (set-window-buffer w bart--rtd-buffer)
       (select-window w))
-    (_bart-mode)))
+    (bart--mode)))
 
 (provide 'bart-mode)
