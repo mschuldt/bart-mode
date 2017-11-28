@@ -33,7 +33,7 @@
   "Bart API key. See http://www.bart.gov/schedules/developers/api
 for reasons why you might want to register for your own")
 
-(defvar bart-rtd-station "civc"
+(defvar bart-station "civc"
   "Default bart station abbreviation.
 Must be a recognized station abbreviation. `bart-stations' provides the mapping")
 
@@ -98,15 +98,15 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
   (interactive)
   (let ((station (ido-completing-read "station: " (mapcar 'car bart-stations))))
     (when station
-      (setq bart-rtd-station (cdr (assoc station bart-stations)))
+      (setq bart-station (cdr (assoc station bart-stations)))
       (when bart--rtd-buffer
-        (bart-rtd-update)))))
+        (bart-update)))))
 
 (defun bart-quit ()
   (interactive)
   (bart--cleanup))
 
-(defun bart-rtd-update ()
+(defun bart-update ()
   (interactive)
   (bart--rtd-request))
 
@@ -114,13 +114,13 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
   (interactive)
   (setq bart-abbreviate-station-names (not bart-abbreviate-station-names))
   (when bart--rtd-buffer
-    (bart-rtd-update)))
+    (bart-update)))
 
 (setq bart-mode-map
       (let ((map (make-sparse-keymap 'bart-mode-map)))
         (define-key map (kbd "s") 'bart-select-station)
         (define-key map (kbd "q") 'bart-quit)
-        (define-key map (kbd "g") 'bart-rtd-update)
+        (define-key map (kbd "g") 'bart-update)
         (define-key map (kbd "a") 'bart-toggle-station-abbreviation)
         map))
 
@@ -217,7 +217,7 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
 
 (defun bart--rtd-request (&optional station)
   ;; http://api.bart.gov/docs/etd/etd.aspx
-  (bart--request "etd.aspx" (list (cons "orig" (or station bart-rtd-station))
+  (bart--request "etd.aspx" (list (cons "orig" (or station bart-station))
                                  (cons "cmd" "etd"))
                 #'bart--rtd-request-callback))
 
@@ -245,7 +245,7 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
     (read-only-mode 1)
     (setq bart--rtd-buffer (current-buffer))
     (setq bart--rtd-update-timer
-          (run-at-time t bart-rtd-update-interval 'bart-rtd-update))
-    (bart-rtd-update)))
+          (run-at-time t bart-rtd-update-interval 'bart-update))
+    (bart-update)))
 
 (provide 'bart-mode)
