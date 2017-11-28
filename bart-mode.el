@@ -253,3 +253,5 @@ source: http://api.bart.gov/docs/overview/abbrev.aspx")
     (bart-update)))
 
 (provide 'bart-mode)
+
+;;; bart-mode.el ends here
