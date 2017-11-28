@@ -4,9 +4,9 @@
 
 ;; Author: Michael Schuldt <mbschuldt@gmail.com>
 ;; Version: 1.4.2
-
-;; Keywords: transit BART
-;; X-URL: https://github.com/mschuldt/bart-mode
+;; URL: https://github.com/mschuldt/bart-mode
+;; Package-Requires: ((emacs "24.3"))
+;; Keywords: convenience transit
 
 ;; This program is free software; you can redistribute it and/or
 ;; modify it under the terms of the GNU General Public License as
