@@ -1,4 +1,4 @@
-bart-mode provides long awaited for access to real time BART departure information from within Emacs:
+bart-mode provides long awaited access to real-time BART departure information from within Emacs:
 
 [[./screenshot.png]]
 * Installation and setup
