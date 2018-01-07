@@ -33,75 +33,98 @@
 (require 'dom)
 (require 'ido)
 
-(defvar bart-api-key "MW9S-E7SL-26DU-VV8V"
+;; User variables:
+(defgroup bart nil
+  "Major mode viewing real-time BART departures info"
+  :prefix "bart-"
+  :group 'applications)
+
+(defcustom bart-api-key "MW9S-E7SL-26DU-VV8V"
   "Bart API key.
 See http://www.bart.gov/schedules/developers/api
-for reasons why you might want to register for your own")
+for reasons why you might want to register for your own"
+  :type 'string
+  :group 'bart)
 
-(defvar bart-station "civc"
+(defcustom bart-abbreviate-station-names nil
+  "If non-nil use station abbreviations instead of full names."
+  :type 'boolean
+  :group 'bart)
+
+(defcustom bart-rtd-update-interval 60
+  "Display update interval in seconds."
+  :type 'integer
+  :group 'bart)
+
+(defcustom bart-stations
+  '(("12th St. Oakland City Center" . 12th)
+    ("16th St. Mission (SF)" . 16th)
+    ("19th St. Oakland" . 19th)
+    ("24th St. Mission (SF)" . 24th)
+    ("Ashby (Berkeley)" . ashb)
+    ("Balboa Park (SF)" . balb)
+    ("Bay Fair (San Leandro)" . bayf)
+    ("Castro Valley" . cast)
+    ("Civic Center (SF)" . civc)
+    ("Coliseum" . cols)
+    ("Colma" . colm)
+    ("Concord" . conc)
+    ("Daly City" . daly)
+    ("Downtown Berkeley" . dbrk)
+    ("Dublin/Pleasanton" . dubl)
+    ("El Cerrito del Norte" . deln)
+    ("El Cerrito Plaza" . plza)
+    ("Embarcadero (SF)" . embr)
+    ("Fremont" . frmt)
+    ("Fruitvale (Oakland)" . ftvl)
+    ("Glen Park (SF)" . glen)
+    ("Hayward" . hayw)
+    ("Lafayette" . lafy)
+    ("Lake Merritt (Oakland)" . lake)
+    ("MacArthur (Oakland)" . mcar)
+    ("Millbrae" . mlbr)
+    ("Montgomery St. (SF)" . mont)
+    ("North Berkeley" . nbrk)
+    ("North Concord/Martinez" . ncon)
+    ("Oakland Int'l Airport" . oakl)
+    ("Orinda" . orin)
+    ("Pittsburg/Bay Point" . pitt)
+    ("Pleasant Hill" . phil)
+    ("Powell St. (SF)" . powl)
+    ("Richmond" . rich)
+    ("Rockridge (Oakland)" . rock)
+    ("San Bruno" . sbrn)
+    ("San Francisco Int'l Airport" . sfia)
+    ("San Leandro" . sanl)
+    ("South Hayward" . shay)
+    ("South San Francisco" . ssan)
+    ("Union City" . ucty)
+    ("Warm Springs/South Fremont" . warm)
+    ("Walnut Creek" . wcrk)
+    ("West Dublin" . wdub)
+    ("West Oakland" . woak))
+  "List of station - abbreviation pairs.
+source: http://api.bart.gov/docs/overview/abbrev.aspx"
+  :type '(alist :key-type (string :tag "Station name")
+                :value-type (string :tag "Station abbreviation"))
+  :group 'bart)
+
+(defcustom bart-station 'civc
   "Default bart station abbreviation.
 Must be a recognized station abbreviation.
-`bart-stations' provides the mapping")
+`bart-stations' provides the mapping"
+  :type `(choice ,@(mapcar (lambda (x)
+                             `(const :tag ,(car x) ,(cdr x)))
+                           bart-stations))
+  :group 'bart)
 
-(defvar bart-abbreviate-station-names nil
-  "If non-nil use station abbreviations instead of full names.")
-
-(defvar bart-rtd-update-interval 60
-  "Display update interval in seconds.")
-
-(defvar bart-stations '(("12th St. Oakland City Center" . "12th")
-                        ("16th St. Mission (SF)" . "16th")
-                        ("19th St. Oakland" . "19th")
-                        ("24th St. Mission (SF)" . "24th")
-                        ("Ashby (Berkeley)" . "ashb")
-                        ("Balboa Park (SF)" . "balb")
-                        ("Bay Fair (San Leandro)" . "bayf")
-                        ("Castro Valley" . "cast")
-                        ("Civic Center (SF)" . "civc")
-                        ("Coliseum" . "cols")
-                        ("Colma" . "colm")
-                        ("Concord" . "conc")
-                        ("Daly City" . "daly")
-                        ("Downtown Berkeley" . "dbrk")
-                        ("Dublin/Pleasanton" . "dubl")
-                        ("El Cerrito del Norte" . "deln")
-                        ("El Cerrito Plaza" . "plza")
-                        ("Embarcadero (SF)" . "embr")
-                        ("Fremont" . "frmt")
-                        ("Fruitvale (Oakland)" . "ftvl")
-                        ("Glen Park (SF)" . "glen")
-                        ("Hayward" . "hayw")
-                        ("Lafayette" . "lafy")
-                        ("Lake Merritt (Oakland)" . "lake")
-                        ("MacArthur (Oakland)" . "mcar")
-                        ("Millbrae" . "mlbr")
-                        ("Montgomery St. (SF)" . "mont")
-                        ("North Berkeley" . "nbrk")
-                        ("North Concord/Martinez" . "ncon")
-                        ("Oakland Int'l Airport" . "oakl")
-                        ("Orinda" . "orin")
-                        ("Pittsburg/Bay Point" . "pitt")
-                        ("Pleasant Hill" . "phil")
-                        ("Powell St. (SF)" . "powl")
-                        ("Richmond" . "rich")
-                        ("Rockridge (Oakland)" . "rock")
-                        ("San Bruno" . "sbrn")
-                        ("San Francisco Int'l Airport" . "sfia")
-                        ("San Leandro" . "sanl")
-                        ("South Hayward" . "shay")
-                        ("South San Francisco" . "ssan")
-                        ("Union City" . "ucty")
-                        ("Warm Springs/South Fremont" . "warm")
-                        ("Walnut Creek" . "wcrk")
-                        ("West Dublin" . "wdub")
-                        ("West Oakland" . "woak"))
-  "Alist of station - abbreviation pairs.
-source: http://api.bart.gov/docs/overview/abbrev.aspx")
-
+;; Internal variables:
 (defvar bart--rtd-buffer nil
   "The BART info display buffer.")
+
 (defvar bart--rtd-update-timer nil
   "Timer used for updating display buffer.")
+
 (defvar bart--rtd-initial-window-height 10
   "Initial window height, the window gets re-sized after each update.")
 
@@ -247,7 +270,7 @@ TYPE is the bart api type.  KEYS are the url keys.  CB is the callback function"
 (defun bart--rtd-request (&optional station)
   "Perform a bart rtd (real-time data) request for STATION."
   ;; http://api.bart.gov/docs/etd/etd.aspx
-  (bart--request "etd.aspx" (list (cons "orig" (or station bart-station))
+  (bart--request "etd.aspx" (list (cons "orig" (symbol-name (or station bart-station)))
                                   (cons "cmd" "etd"))
                  #'bart--rtd-request-callback))
 
