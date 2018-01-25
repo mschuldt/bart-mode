@@ -31,7 +31,6 @@
 (require 'url)
 (require 'xml)
 (require 'dom)
-(require 'ido)
 
 ;; User variables:
 (defgroup bart nil
@@ -131,7 +130,7 @@ Must be a recognized station abbreviation.
 (defun bart-select-station ()
   "Interactivly select the current BART station."
   (interactive)
-  (let ((station (ido-completing-read "station: " (mapcar 'car bart-stations))))
+  (let ((station (completing-read "station: " (mapcar 'car bart-stations))))
     (when station
       (setq bart-station (cdr (assoc station bart-stations)))
       (when bart--rtd-buffer
