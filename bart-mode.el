@@ -199,12 +199,6 @@ Must be a recognized station abbreviation.
                              "#6ca6cd" "black" 'bold 150)
                   (bart--str "\n\n" "#6ca6cd" nil nil 50))))
 
-(defun bart--caddar (x)
-  "Return the ‘car’ of the ‘cdr’ of the ‘cdr’ of the ‘car’ of X.
-Eliminates the dependency on 'cl"
-  (declare (compiler-macro internal--compiler-macro-cXXr))
-  (nth 2 (car x)))
-
 (defun bart--rtd-update-buffer (xml)
   "Update the current buffer using the bart data XML."
   (read-only-mode -1)
@@ -212,26 +206,26 @@ Eliminates the dependency on 'cl"
   (bart--rtd-insert-header)
   (let* ((root (car (dom-by-tag xml 'root)))
          (station (dom-by-tag root 'station))
-         (time (bart--caddar (dom-by-tag root 'time)))
-         (name (bart--caddar (dom-by-tag station 'name)))
+         (time (caddar (dom-by-tag root 'time)))
+         (name (caddar (dom-by-tag station 'name)))
          (destinations (dom-by-tag station 'etd))
          dest abr min len color station-name)
     (insert (concat (bart--str (format " %s" name) "tan" "black" 'bold)
                     (bart--str " Departures as of " "tan" "black")
                     (bart--str (format "%s\n" time) "tan" "black" 'ultra-bold)))
     (dolist (station destinations)
-      (setq dest (bart--caddar (dom-by-tag station 'destination))
-            abr (bart--caddar (dom-by-tag station 'abbreviation))
+      (setq dest (caddar (dom-by-tag station 'destination))
+            abr (caddar (dom-by-tag station 'abbreviation))
             station-name (if bart-abbreviate-station-names
                              (format "%-8s" abr)
                            (format "%-30s" dest)))
       (insert (bart--str station-name nil nil 'ultra-bold))
       (dolist (etd (dom-by-tag station 'estimate))
-        (setq min (bart--caddar (dom-by-tag etd 'minutes))
-              ;;plat (bart--caddar (dom-by-tag etd 'platform))
-              ;;dir (bart--caddar (dom-by-tag etd 'direction))
-              len (bart--caddar (dom-by-tag etd 'length))
-              color (bart--caddar (dom-by-tag etd 'hexcolor)))
+        (setq min (caddar (dom-by-tag etd 'minutes))
+              ;;plat (caddar (dom-by-tag etd 'platform))
+              ;;dir (caddar (dom-by-tag etd 'direction))
+              len (caddar (dom-by-tag etd 'length))
+              color (caddar (dom-by-tag etd 'hexcolor)))
 
         (insert (format "%-25s" (concat (bart--str (char-to-string ?\x25A0)
                                                    nil
