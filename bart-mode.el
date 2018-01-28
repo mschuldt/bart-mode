@@ -287,7 +287,6 @@ TYPE is the bart api type.  KEYS are the url keys.  CB is the callback function"
   "Mode for displaying real-time bart departures"
   (if (called-interactively-p nil)
       (error "Use M-x bart")
-    (use-local-map bart-mode-map)
     (add-hook 'kill-buffer-hook 'bart--rtd-buffer-killed-hook-fn)
     (setq truncate-lines t)
     (read-only-mode 1)
