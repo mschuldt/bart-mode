@@ -283,7 +283,7 @@ TYPE is the bart api type.  KEYS are the url keys.  CB is the callback function"
     (setq bart--rtd-buffer nil)
     (bart--cleanup)))
 
-(define-derived-mode bart-mode fundamental-mode "Bart"
+(define-derived-mode bart-mode special-mode "Bart"
   "Mode for displaying real-time bart departures"
   (if (called-interactively-p nil)
       (error "Use M-x bart")
