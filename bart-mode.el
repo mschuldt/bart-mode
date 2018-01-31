@@ -117,6 +117,51 @@ Must be a recognized station abbreviation.
                            bart-stations))
   :group 'bart)
 
+(defface bart-bold
+  '((t :weight ultra-bold))
+  "bart-mode bold face."
+  :group 'bart-faces)
+
+(defface bart-blue
+  '((((class color) (background light)) (:foreground "#0099cc"))
+    (((class color) (background dark)) (:foreground "#0099cc")))
+  "Bart blue face."
+  :group 'bart-faces)
+
+(defface bart-green
+  '((((class color) (background light)) (:foreground "#339933"))
+    (((class color) (background dark)) (:foreground "#339933")))
+  "Bart green face."
+  :group 'bart-faces)
+
+(defface bart-red
+  '((((class color) (background light)) (:foreground "#ff0000"))
+    (((class color) (background dark)) (:foreground "#ff0000")))
+  "Bart red face."
+  :group 'bart-faces)
+
+(defface bart-yellow
+  '((((class color) (background light)) (:foreground "#ffff33"))
+    (((class color) (background dark)) (:foreground "#ffff33")))
+  "Bart yellow face."
+  :group 'bart-faces)
+
+(defface bart-orange
+  '((((class color) (background light)) (:foreground "#ff9933"))
+    (((class color) (background dark)) (:foreground "#ff9933")))
+  "Bart orange face."
+  :group 'bart-faces)
+
+(defface bart-header
+  '((t :inherit (header-line-highlight)))
+  "Face for bart header"
+  :group 'bart-faces)
+
+(defface bart-header-bold
+  '((t :inherit (bart-header bart-bold)))
+  "Face for bart bold header"
+  :group 'bart-faces)
+
 ;; Internal variables:
 (defvar bart--rtd-buffer nil
   "The BART info display buffer.")
