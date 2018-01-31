@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Michael Schuldt
 
 ;; Author: Michael Schuldt <mbschuldt@gmail.com>
-;; Version: 1.4.2
+;; Version: 1.5.2
 ;; URL: https://github.com/mschuldt/bart-mode
 ;; Package-Requires: ((emacs "24.3"))
 ;; Keywords: convenience transit
