@@ -172,6 +172,14 @@ Must be a recognized station abbreviation.
 (defvar bart--rtd-initial-window-height 10
   "Initial window height, the window gets re-sized after each update.")
 
+(defvar bart--face-map #s(hash-table size 30 test equal data ("BLUE" bart-blue
+                                                              "GREEN" bart-green
+                                                              "RED" bart-red
+                                                              "YELLOW" bart-yellow
+                                                              "ORANGE" bart-orange
+                                                              ))
+  "Maps colors from API to bart-mode faces")
+
 (defun bart-select-station ()
   "Interactivly select the current BART station."
   (interactive)
@@ -221,17 +229,17 @@ Must be a recognized station abbreviation.
     (select-window w))
   (bart-mode))
 
-(defun bart--str (str &optional background foreground weight height)
-  "Propertize STR with BACKGROUND, FOREGROUND, WEIGHT, and HEIGHT properties."
-  (let (props)
-    (when foreground (push (list :foreground foreground) props))
-    (when background (push (list :background background) props))
-    (when weight (push (list :weight weight) props))
-    ;;TODO: need to set height relatively
-    (and t ;; disable like this to avoid bytecomp warnings
-         (when height (push (list :height height) props)))
-    (propertize str 'font-lock-face props)))
+(defun bart--make-color-square (color)
+  (propertize (char-to-string ?\x25A0) 'font-lock-face (gethash color bart--face-map 'bart-red)))
 
+(defun bart--bold (str)
+  (propertize str 'font-lock-face 'bart-bold))
+
+(defun bart--header (str)
+  (propertize str 'font-lock-face 'bart-header))
+
+(defun bart--header-bold (str)
+  (propertize str 'font-lock-face 'bart-header-bold))
 
 (defun bart--rtd-update-buffer (xml)
   "Update the current buffer using the bart data XML."
@@ -243,33 +251,30 @@ Must be a recognized station abbreviation.
          (name (caddar (dom-by-tag station 'name)))
          (destinations (dom-by-tag station 'etd))
          dest abr min len color station-name)
-    (insert (concat (bart--str (format " %s" name) "tan" "black" 'bold)
-                    (bart--str " Departures as of " "tan" "black")
-                    (bart--str (format "%s\n" time) "tan" "black" 'ultra-bold)))
+    (insert (concat (bart--header-bold (format " %s" name))
+                    (bart--header " Departures as of ")
+                    (bart--header-bold (format "%s\n" time))))
     (dolist (station destinations)
       (setq dest (caddar (dom-by-tag station 'destination))
             abr (caddar (dom-by-tag station 'abbreviation))
             station-name (if bart-abbreviate-station-names
                              (format "%-8s" abr)
                            (format "%-30s" dest)))
-      (insert (bart--str station-name nil nil 'ultra-bold))
+      (insert (bart--bold station-name))
       (dolist (etd (dom-by-tag station 'estimate))
         (setq min (caddar (dom-by-tag etd 'minutes))
               ;;plat (caddar (dom-by-tag etd 'platform))
               ;;dir (caddar (dom-by-tag etd 'direction))
               len (caddar (dom-by-tag etd 'length))
-              color (caddar (dom-by-tag etd 'hexcolor)))
+              color (caddar (dom-by-tag etd 'color)))
 
-        (insert (format "%-25s" (concat (bart--str (char-to-string ?\x25A0)
-                                                   nil
-                                                   color)
-                                        (bart--str (if (string= min "Leaving")
-                                                       (concat " " min " ")
-                                                     (format " %s min " min))
-                                                   nil nil 'ultra-bold)
+        (insert (format "%-25s" (concat (bart--make-color-square color)
+                                        (bart--bold (if (string= min "Leaving")
+                                                        (concat " " min " ")
+                                                      (format " %s min " min)))
                                         (format "(%s car)" len)))))
       (insert "\n")))
-  (insert (bart--str "\n" "#6ca6cd"))
+  (insert "\n")
   (goto-char 1)
   (read-only-mode 1)
   (fit-window-to-buffer (get-buffer-window (current-buffer))))
