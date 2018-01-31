@@ -55,6 +55,11 @@ for reasons why you might want to register for your own"
   :type 'integer
   :group 'bart)
 
+(defcustom bart-manage-window nil
+  "If non-nil actively manage the bart buffer in a seporate fitted window."
+  :type 'boolean
+  :group 'bart)
+
 (defcustom bart-stations
   '(("12th St. Oakland City Center" . 12th)
     ("16th St. Mission (SF)" . 16th)
@@ -220,14 +225,18 @@ Must be a recognized station abbreviation.
   (interactive)
   (bart--cleanup)
   (setq bart--rtd-buffer (get-buffer-create "*BART Departures*"))
-  (let ((w (get-largest-window)))
-    (setq w (split-window w
-                          (- (window-height w)
-                             bart--rtd-initial-window-height 2)
-                          nil))
-    (set-window-buffer w bart--rtd-buffer)
-    (select-window w))
-  (bart-mode))
+  (if bart-manage-window
+      (let ((w (get-largest-window)))
+        (setq w (split-window w
+                              (- (window-height w)
+                                 bart--rtd-initial-window-height 2)
+                              nil))
+        (set-window-buffer w bart--rtd-buffer)
+        (select-window w)
+        (bart-mode))
+    (with-current-buffer bart--rtd-buffer
+      (bart-mode))
+    (display-buffer  bart--rtd-buffer nil)))
 
 (defun bart--make-color-square (color)
   (propertize (char-to-string ?\x25A0) 'font-lock-face (gethash color bart--face-map 'bart-red)))
@@ -277,7 +286,8 @@ Must be a recognized station abbreviation.
   (insert "\n")
   (goto-char 1)
   (read-only-mode 1)
-  (fit-window-to-buffer (get-buffer-window (current-buffer))))
+  (when bart-manage-window
+    (fit-window-to-buffer (get-buffer-window (current-buffer)))))
 
 (defun bart--rtd-request-callback (xml)
   "The bart-mode timer callback.
