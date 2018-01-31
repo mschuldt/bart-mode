@@ -10,19 +10,30 @@ In your config file:
 The default station can be set with ~bart-rtd-station~ which must be set to a recognized station abbreviation.
 For example, to set your default station to civic center:
 #+BEGIN_SRC emacs-lisp
-  (setq bart-rtd-station "civc")
+  (setq bart-station 'civc)
 #+END_SRC
+The complete list of abbreviations can be viewed by using =M-x describe-variable= on =bart-stations=
+
+By default the bart buffer is displayed with ~display-buffer~. The option ~bart-manage-window~
+can be used to display the bart window similar to how the calc window is displayed. This is disabled by default, to enable:
+#+BEGIN_SRC emacs-lisp
+  (setq bart-manage-window t)
+#+END_SRC
+
+These options, and others, may also be set with customize:
+: M-x customize-group
+and selecting the =bart= group
 
 * Usage
 To view real time bart departures:
 : M-x bart
-use =s= to select another station or =q= to quit.
+
+supported key commands:
+| s | select another station      |
+| g | update                      |
+| q | quit                        |
+| a | toggle statoin abbreviation |
 
 * API key
-Bart-mode comes with the public API key. If BART revokes this key due to abuse you may have to register for your 
+Bart-mode comes with the public API key. If BART revokes this key due to abuse you may have to register for your
 own at http://api.bart.gov/api/register.aspx
-
-* todo
-- Display advisory Information http://api.bart.gov/docs/bsa/
-- Handle error responses
-- Sort destinations by station platform? - not useful
