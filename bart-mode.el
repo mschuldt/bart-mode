@@ -187,22 +187,11 @@ Must be a recognized station abbreviation.
          (when height (push (list :height height) props)))
     (propertize str 'font-lock-face props)))
 
-(defun bart--rtd-insert-header ()
-  "Insert the bart-mode buffer header."
-  (insert (concat (bart--str "\n" "#6ca6cd" nil nil 50)
-                  (bart--str " " "#6ca6cd" nil nil 110)
-                  (bart--str "b" "white" "black" 'ultra-bold 200)
-                  (bart--str "a" "white" "blue" 'ultra-bold 200)
-                  (bart--str "rt" "#6ca6cd" "black" 'ultra-bold 200)
-                  (bart--str " Real Time Departures"
-                             "#6ca6cd" "black" 'bold 150)
-                  (bart--str "\n\n" "#6ca6cd" nil nil 50))))
 
 (defun bart--rtd-update-buffer (xml)
   "Update the current buffer using the bart data XML."
   (read-only-mode -1)
   (erase-buffer)
-  (bart--rtd-insert-header)
   (let* ((root (car (dom-by-tag xml 'root)))
          (station (dom-by-tag root 'station))
          (time (caddar (dom-by-tag root 'time)))
