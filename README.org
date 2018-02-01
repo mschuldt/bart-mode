@@ -7,7 +7,7 @@ In your config file:
   (add-to-list 'load-path "path/to/bart-mode")
   (require 'bart-mode)
 #+END_SRC
-The default station can be set with ~bart-rtd-station~ which must be set to a recognized station abbreviation.
+The default station can be set with ~bart-station~ which must be set to a recognized station abbreviation.
 For example, to set your default station to civic center:
 #+BEGIN_SRC emacs-lisp
   (setq bart-station 'civc)
@@ -20,9 +20,7 @@ can be used to display the bart window similar to how the calc window is display
   (setq bart-manage-window t)
 #+END_SRC
 
-These options, and others, may also be set with customize:
-: M-x customize-group
-and selecting the =bart= group
+These options, and others, may also be set with =M-x customize-group= and selecting the =bart= group
 
 * Usage
 To view real time bart departures:
