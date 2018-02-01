@@ -30,7 +30,7 @@ supported key commands:
 | s | select another station      |
 | g | update                      |
 | q | quit                        |
-| a | toggle statoin abbreviation |
+| a | toggle station abbreviation |
 
 * API key
 Bart-mode comes with the public API key. If BART revokes this key due to abuse you may have to register for your
