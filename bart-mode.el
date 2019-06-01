@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 Michael Schuldt
 
 ;; Author: Michael Schuldt <mbschuldt@gmail.com>
-;; Version: 1.5.2
+;; Version: 1.5.3
 ;; URL: https://github.com/mschuldt/bart-mode
 ;; Package-Requires: ((emacs "24.3"))
 ;; Keywords: convenience transit
@@ -66,6 +66,7 @@ for reasons why you might want to register for your own"
     ("19th St. Oakland" . 19th)
     ("24th St. Mission (SF)" . 24th)
     ("Ashby (Berkeley)" . ashb)
+    ("Antioch" . antc)
     ("Balboa Park (SF)" . balb)
     ("Bay Fair (San Leandro)" . bayf)
     ("Castro Valley" . cast)
@@ -93,6 +94,7 @@ for reasons why you might want to register for your own"
     ("Oakland Int'l Airport" . oakl)
     ("Orinda" . orin)
     ("Pittsburg/Bay Point" . pitt)
+    ("Pittsburg Center" . pctr)
     ("Pleasant Hill" . phil)
     ("Powell St. (SF)" . powl)
     ("Richmond" . rich)
